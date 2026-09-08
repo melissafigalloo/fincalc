@@ -44,7 +44,7 @@ const calculators = [
     cta: "Open mortgage calculator",
   },
   {
-    href: "/calculators/compound-interest",
+    href: "/compound-interest--calculator",
     icon: PiggyBank,
     title: "Compound Interest Calculator",
     description:
@@ -156,6 +156,7 @@ export default function Home() {
             <Button
               size="lg"
               className="px-5"
+              nativeButton={false}
               render={<Link href="/mortgage-repayments-calculator" />}
             >
               <House data-icon="inline-start" />
@@ -165,7 +166,8 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="px-5"
-              render={<Link href="/calculators/compound-interest" />}
+              nativeButton={false}
+              render={<Link href="/compound-interest--calculator" />}
             >
               <PiggyBank data-icon="inline-start" />
               Compound interest calculator
@@ -295,6 +297,7 @@ export default function Home() {
               <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                 <Button
                   variant="secondary"
+                  nativeButton={false}
                   render={<Link href="/mortgage-repayments-calculator" />}
                 >
                   <House data-icon="inline-start" />
@@ -302,7 +305,8 @@ export default function Home() {
                 </Button>
                 <Button
                   variant="secondary"
-                  render={<Link href="/calculators/compound-interest" />}
+                  nativeButton={false}
+                  render={<Link href="/compound-interest--calculator" />}
                 >
                   <PiggyBank data-icon="inline-start" />
                   Compound interest calculator
