@@ -31,7 +31,7 @@ import { Separator } from "@/components/ui/separator";
 
 const calculators = [
   {
-    href: "/calculators/mortgage",
+    href: "/mortgage-repayments-calculator",
     icon: House,
     title: "Mortgage Repayment Calculator",
     description:
@@ -156,7 +156,7 @@ export default function Home() {
             <Button
               size="lg"
               className="px-5"
-              render={<Link href="/calculators/mortgage" />}
+              render={<Link href="/mortgage-repayments-calculator" />}
             >
               <House data-icon="inline-start" />
               Mortgage calculator
@@ -295,7 +295,7 @@ export default function Home() {
               <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                 <Button
                   variant="secondary"
-                  render={<Link href="/calculators/mortgage" />}
+                  render={<Link href="/mortgage-repayments-calculator" />}
                 >
                   <House data-icon="inline-start" />
                   Mortgage calculator
