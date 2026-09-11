@@ -1,8 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Receipt, Wallet } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
@@ -21,15 +19,14 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Progress } from "@/components/ui/progress";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { calculateMortgage, formatCurrency, formatRatio } from "@/lib/mortgage";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AmortizationSchedule } from "@/components/amortization-schedule";
+import { calculateMortgage, formatCurrency } from "@/lib/mortgage";
 
-const DEFAULT_LOAN_AMOUNT = "300000";
+const DEFAULT_LOAN_AMOUNT = "400000";
+const DEFAULT_DOWN_PAYMENT = "100000";
 const DEFAULT_INTEREST_RATE = "6.5";
 const DEFAULT_TERM = "30";
-
-type TermUnit = "years" | "months";
 
 function parseNumber(value: string): number {
   if (value.trim() === "") {
@@ -41,209 +38,176 @@ function parseNumber(value: string): number {
 
 export function MortgageCalculator() {
   const [loanAmount, setLoanAmount] = useState(DEFAULT_LOAN_AMOUNT);
+  const [downPayment, setDownPayment] = useState(DEFAULT_DOWN_PAYMENT);
   const [interestRate, setInterestRate] = useState(DEFAULT_INTEREST_RATE);
-  const [term, setTerm] = useState(DEFAULT_TERM);
-  const [termUnit, setTermUnit] = useState<TermUnit>("years");
+  const [termYears, setTermYears] = useState(DEFAULT_TERM);
 
   const result = useMemo(() => {
-    const principal = parseNumber(loanAmount);
+    const loan = parseNumber(loanAmount);
+    const down = parseNumber(downPayment);
+    const principal = Math.max(0, Number.isFinite(loan) ? loan : 0);
     const annualRate = parseNumber(interestRate);
-    const termValue = parseNumber(term);
-    const termYears =
-      termUnit === "months" && Number.isFinite(termValue)
-        ? termValue / 12
-        : termValue;
+    const term = parseNumber(termYears);
 
     return calculateMortgage({
-      principal: Number.isFinite(principal) ? principal : 0,
+      principal: principal - Math.max(0, Number.isFinite(down) ? down : 0),
       annualRate: Number.isFinite(annualRate) ? annualRate : 0,
-      termYears: Number.isFinite(termYears) ? termYears : 0,
+      termYears: Number.isFinite(term) ? term : 0,
+      frequency: "monthly",
     });
-  }, [loanAmount, interestRate, term, termUnit]);
+  }, [loanAmount, downPayment, interestRate, termYears]);
 
-  const handleTermUnitChange = (value: Array<string | number>) => {
-    const next = String(value[0] ?? "");
-    if (next !== "years" && next !== "months") {
-      return;
-    }
-    if (next === termUnit) {
-      return;
-    }
-
-    const current = parseNumber(term);
-    if (Number.isFinite(current) && current > 0) {
-      if (next === "months") {
-        setTerm(String(Math.round(current * 12)));
-      } else {
-        setTerm(String(Math.round((current / 12) * 100) / 100));
-      }
-    }
-
-    setTermUnit(next);
-  };
-
-  const displayTerm = result.totalPayment > 0 ? `${term} ${termUnit}` : "0";
+  const repayments = [
+    {
+      label: "Total Payment",
+      value: formatCurrency(result.totalPayment),
+    },
+    {
+      label: "Total Interest",
+      value: formatCurrency(result.totalInterest),
+    },
+    {
+      label: "Principal Amount",
+      value: formatCurrency(result.principal),
+    },
+    {
+      label: "Number of Payments",
+      value: result.periods.toLocaleString("en-US"),
+    },
+  ];
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Your details</CardTitle>
-          <CardDescription>
-            Adjust any figure and the results update instantly.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="loan-amount">Loan amount</FieldLabel>
-              <InputGroup>
-                <InputGroupAddon>$</InputGroupAddon>
-                <InputGroupInput
-                  id="loan-amount"
-                  type="text"
-                  inputMode="decimal"
-                  autoComplete="off"
-                  value={loanAmount}
-                  onChange={(event) => setLoanAmount(event.target.value)}
-                />
-              </InputGroup>
-              <FieldDescription>
-                The total amount you are borrowing.
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="interest-rate">
-                Annual interest rate
-              </FieldLabel>
-              <InputGroup>
-                <InputGroupInput
-                  id="interest-rate"
-                  type="text"
-                  inputMode="decimal"
-                  autoComplete="off"
-                  value={interestRate}
-                  onChange={(event) => setInterestRate(event.target.value)}
-                />
-                <InputGroupAddon align="inline-end">%</InputGroupAddon>
-              </InputGroup>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="loan-term">Loan term</FieldLabel>
-              <ToggleGroup
-                aria-label="Loan term unit"
-                value={[termUnit]}
-                onValueChange={handleTermUnitChange}
-              >
-                <ToggleGroupItem value="years">Years</ToggleGroupItem>
-                <ToggleGroupItem value="months">Months</ToggleGroupItem>
-              </ToggleGroup>
-              <InputGroup>
-                <InputGroupInput
-                  id="loan-term"
-                  type="text"
-                  inputMode="decimal"
-                  autoComplete="off"
-                  value={term}
-                  onChange={(event) => setTerm(event.target.value)}
-                />
-                <InputGroupAddon align="inline-end">{termUnit}</InputGroupAddon>
-              </InputGroup>
-              <FieldDescription>
-                How long you plan to take to pay it off.
-              </FieldDescription>
-            </Field>
-          </FieldGroup>
-        </CardContent>
-      </Card>
+    <Tabs defaultValue="calculator">
+      <TabsList>
+        <TabsTrigger value="calculator">Calculator</TabsTrigger>
+        <TabsTrigger value="schedule">Amortisation Schedule</TabsTrigger>
+      </TabsList>
 
-      <div className="flex flex-col gap-4">
-        <Card className="gap-0 ring-0 bg-primary text-primary-foreground">
-          <CardContent className="py-8">
-            <p className="text-sm font-medium text-primary-foreground/70">
-              Monthly repayment
-            </p>
-            <p className="mt-1 text-4xl font-semibold tracking-tight tabular-nums">
-              {formatCurrency(result.monthlyPayment)}
-            </p>
-            <p className="mt-2 text-sm text-primary-foreground/70">
-              per month over {displayTerm}
-            </p>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-4 sm:grid-cols-2">
+      <TabsContent value="calculator">
+        <div className="grid items-start gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-1.5">
-                <Receipt
-                  className="size-4 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                Total interest
-              </CardTitle>
+              <CardTitle>Loan Details</CardTitle>
+              <CardDescription>
+                Enter your loan information to calculate repayments.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-semibold tabular-nums">
-                {formatCurrency(result.totalInterest)}
-              </p>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="loan-amount">Loan Amount</FieldLabel>
+                  <InputGroup>
+                    <InputGroupAddon>$</InputGroupAddon>
+                    <InputGroupInput
+                      id="loan-amount"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      value={loanAmount}
+                      onChange={(event) => setLoanAmount(event.target.value)}
+                    />
+                  </InputGroup>
+                  <FieldDescription>
+                    The total amount you plan to borrow.
+                  </FieldDescription>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="down-payment">Down Payment</FieldLabel>
+                  <InputGroup>
+                    <InputGroupAddon>$</InputGroupAddon>
+                    <InputGroupInput
+                      id="down-payment"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      value={downPayment}
+                      onChange={(event) => setDownPayment(event.target.value)}
+                    />
+                  </InputGroup>
+                  <FieldDescription>
+                    Your down payment reduces the loan. You borrow{" "}
+                    {formatCurrency(result.principal)} in total.
+                  </FieldDescription>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="interest-rate">
+                    Annual Interest Rate
+                  </FieldLabel>
+                  <InputGroup>
+                    <InputGroupInput
+                      id="interest-rate"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      value={interestRate}
+                      onChange={(event) => setInterestRate(event.target.value)}
+                    />
+                    <InputGroupAddon align="inline-end">%</InputGroupAddon>
+                  </InputGroup>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="loan-term">Loan Term (years)</FieldLabel>
+                  <InputGroup>
+                    <InputGroupInput
+                      id="loan-term"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      value={termYears}
+                      onChange={(event) => setTermYears(event.target.value)}
+                    />
+                    <InputGroupAddon align="inline-end">years</InputGroupAddon>
+                  </InputGroup>
+                  <FieldDescription>
+                    How long you plan to take to pay the loan off.
+                  </FieldDescription>
+                </Field>
+              </FieldGroup>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-1.5">
-                <Wallet
-                  className="size-4 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                Total cost
-              </CardTitle>
+              <CardTitle>Your Repayments</CardTitle>
+              <CardDescription>
+                Estimated monthly and total costs.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold tabular-nums">
-                {formatCurrency(result.totalPayment)}
-              </p>
+            <CardContent className="flex flex-col gap-4">
+              <div className="rounded-lg bg-primary p-5 text-primary-foreground">
+                <p className="text-sm font-medium text-primary-foreground/70">
+                  Monthly Payment
+                </p>
+                <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
+                  {formatCurrency(result.payment)}
+                </p>
+              </div>
+              <dl className="flex flex-col">
+                {repayments.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between gap-2 border-b py-2.5 last:border-b-0"
+                  >
+                    <dt className="text-sm text-muted-foreground">
+                      {item.label}
+                    </dt>
+                    <dd className="text-base font-semibold tabular-nums">
+                      {item.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </CardContent>
           </Card>
         </div>
+      </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Where your money goes</CardTitle>
-            <CardDescription>
-              Split of total repayments over the full term.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-              <span>Principal</span>
-              <span className="text-muted-foreground tabular-nums">
-                {formatRatio(result.principalRatio)}
-              </span>
-            </div>
-            <Progress value={result.principalRatio * 100} />
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-              <span>Interest</span>
-              <span className="text-muted-foreground tabular-nums">
-                {formatRatio(result.interestRatio)}
-              </span>
-            </div>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Of the {formatCurrency(result.totalPayment)} you repay in total,{" "}
-              {formatCurrency(result.principal)} is the amount you borrowed and{" "}
-              {formatCurrency(result.totalInterest)} is interest.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Alert variant="default" className="lg:col-span-2">
-        <AlertTitle>Planning figures only</AlertTitle>
-        <AlertDescription>
-          This calculator produces an estimate to help you plan. Speak with a
-          qualified financial adviser before making big commitments.
-        </AlertDescription>
-      </Alert>
-    </div>
+      <TabsContent value="schedule">
+        <AmortizationSchedule
+          schedule={result.schedule}
+          periodType={result.periodType}
+        />
+      </TabsContent>
+    </Tabs>
   );
 }

@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Info, House } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { House } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 
 export const metadata: Metadata = {
-  title: "Mortgage Repayment Calculator",
+  title: "Mortgage Repayments Calculator",
   description:
-    "Estimate your monthly mortgage repayments, total interest paid, and the total cost of your loan. Free, instant, no sign-up required.",
+    "Calculate your monthly mortgage payments and see the full amortisation schedule.",
 };
 
 export default function MortgageRepaymentsCalculatorPage() {
@@ -23,28 +22,16 @@ export default function MortgageRepaymentsCalculatorPage() {
           Mortgage
         </Badge>
         <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl sm:leading-[1.08]">
-          Mortgage repayment calculator
+          Mortgage Repayments Calculator
         </h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-          Enter your loan amount, interest rate and term to see your monthly
-          repayments, total interest and the real cost of the loan.
+          Calculate your monthly mortgage payments and see the full amortisation
+          schedule.
         </p>
       </section>
 
       <section className="mx-auto w-full max-w-5xl px-6 pb-16 sm:px-16">
         <MortgageCalculator />
-      </section>
-
-      <section className="mx-auto w-full max-w-5xl px-6 pb-10 sm:px-16">
-        <Alert variant="default">
-          <Info />
-          <AlertTitle>Planning figures only</AlertTitle>
-          <AlertDescription>
-            This calculator provides estimates to help you plan. Rates change
-            and fees vary, so always confirm the exact figures with your lender
-            before committing.
-          </AlertDescription>
-        </Alert>
       </section>
     </div>
   );
