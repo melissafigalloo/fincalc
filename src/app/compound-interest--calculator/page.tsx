@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Info, PiggyBank } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PiggyBank } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CompoundInterestCalculator } from "@/components/compound-interest-calculator";
 
 export const metadata: Metadata = {
   title: "Compound Interest Calculator",
   description:
-    "See how your savings and investments grow over time with daily, monthly or yearly compounding and recurring contributions. Free, instant, no sign-up required.",
+    "See how your investments grow over time with compound interest. Project savings, compare frequencies, and plan your financial future.",
 };
 
 export default function CompoundInterestCalculatorPage() {
@@ -23,28 +22,16 @@ export default function CompoundInterestCalculatorPage() {
           Compound interest
         </Badge>
         <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl sm:leading-[1.08]">
-          Compound interest calculator
+          Compound Interest Calculator
         </h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-          Enter your initial amount, monthly contributions and interest rate to
-          see how your savings can grow over time.
+          See how your investments grow over time with compound interest.
+          Project savings, compare frequencies, and plan your financial future.
         </p>
       </section>
 
       <section className="mx-auto w-full max-w-5xl px-6 pb-16 sm:px-16">
         <CompoundInterestCalculator />
-      </section>
-
-      <section className="mx-auto w-full max-w-5xl px-6 pb-10 sm:px-16">
-        <Alert variant="default">
-          <Info />
-          <AlertTitle>Planning figures only</AlertTitle>
-          <AlertDescription>
-            This calculator provides estimates to help you plan. Investment
-            returns vary and are not guaranteed, so always confirm your options
-            with a qualified financial adviser.
-          </AlertDescription>
-        </Alert>
       </section>
     </div>
   );
